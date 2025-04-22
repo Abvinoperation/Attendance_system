@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+ 
+{% block title %}Manage Designations{% endblock %}
+ 
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+<h2>Manage Designations</h2>
+<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addDesignationModal">
+<i class="bi bi-plus-circle"></i> Add Designation
+</button>
+</div>
+ 
+<div class="card">
+<div class="card-body">
+<div class="table-responsive">
+<table class="table table-hover">
+<thead>
+<tr>
+
+<th>Name</th>
+<th>Description</th>
+<th>Actions</th>
+</tr>
+</thead>
+<tbody>
+                    {% for designation in designations %}
+<tr>
+<td>{{ designation.desig_name }}</td>
+<td>{{ designation.description or '-' }}</td>
+<td>
+<button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#editDesignationModal{{ designation.desig_id }}">
+<i class="bi bi-pencil"></i>
+</button>
+<form method="POST" action="{{ url_for('delete_designation', desig_id=designation.desig_id) }}" style="display: inline;">
+<button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this designation?')">
+<i class="bi bi-trash"></i>
+</button>
+</form>
+</td>
+</tr>
+ 
+                    <!-- Edit Designation Modal -->
+<div class="modal fade" id="editDesignationModal{{ designation.desig_id }}" tabindex="-1">
+<div class="modal-dialog">
+<div class="modal-content">
+<div class="modal-header">
+<h5 class="modal-title">Edit Designation</h5>
+<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+<form method="POST" action="{{ url_for('edit_designation', desig_id=designation.desig_id) }}">
+<div class="modal-body">
+<div class="mb-3">
+<label for="desig_name" class="form-label">Designation Name</label>
+<input type="text" class="form-control" id="desig_name" name="desig_name" value="{{ designation.desig_name }}" required>
+</div>
+<div class="mb-3">
+<label for="description" class="form-label">Description</label>
+<textarea class="form-control" id="description" name="description">{{ designation.description or '' }}</textarea>
+</div>
+</div>
+<div class="modal-footer">
+<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+<button type="submit" class="btn btn-primary">Save Changes</button>
+</div>
+</form>
+</div>
+</div>
+</div>
+                    {% endfor %}
+</tbody>
+</table>
+</div>
+</div>
+</div>
+ 
+<!-- Add Designation Modal -->
+<div class="modal fade" id="addDesignationModal" tabindex="-1">
+<div class="modal-dialog">
+<div class="modal-content">
+<div class="modal-header">
+<h5 class="modal-title">Add New Designation</h5>
+<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+<form method="POST" action="{{ url_for('add_designation') }}">
+<div class="modal-body">
+<div class="mb-3">
+<label for="desig_name" class="form-label">Designation Name</label>
+<input type="text" class="form-control" id="desig_name" name="desig_name" required>
+</div>
+<div class="mb-3">
+<label for="description" class="form-label">Description</label>
+<textarea class="form-control" id="description" name="description"></textarea>
+</div>
+</div>
+<div class="modal-footer">
+<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+<button type="submit" class="btn btn-primary">Add Designation</button>
+</div>
+</form>
+</div>
+</div>
+</div>
+{% endblock %}

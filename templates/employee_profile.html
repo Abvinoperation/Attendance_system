@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+ 
+{% block title %}My Profile{% endblock %}
+ 
+{% block content %}
+<div class="row">
+<div class="col-md-4">
+<div class="card">
+<div class="card-body text-center">
+                {% if employee.profile_pic %}
+<img src="{{ url_for('static', filename='uploads/profile_pics/' + employee.profile_pic) }}" class="rounded-circle mb-3" width="150" height="150">
+                {% else %}
+<div class="bg-light rounded-circle d-flex align-items-center justify-content-center mb-3" style="width: 150px; height: 150px; margin: 0 auto;">
+<i class="bi bi-person" style="font-size: 3rem;"></i>
+</div>
+                {% endif %}
+<h4>{{ employee.first_name }} {{ employee.last_name }}</h4>
+<p class="text-muted">{{ employee.desig_name or '-' }}</p>
+<!-- Profile Picture Upload Section -->
+<div class="profile-picture-section mt-4">
+<form method="POST" action="{{ url_for('update_employee_profile_pic') }}" enctype="multipart/form-data">
+<div class="form-group">
+<label for="profile_pic">Update Profile Picture:</label>
+<input type="file" class="form-control" name="profile_pic" id="profile_pic" accept=".png,.jpg,.jpeg,.gif">
+</div>
+<button type="submit" class="btn btn-primary btn-sm mt-2">Upload</button>
+</form>
+</div>
+</div>
+</div>
+</div>
+ 
+    <div class="col-md-8">
+<div class="card">
+<div class="card-header">
+<h5>Personal Information</h5>
+</div>
+<div class="card-body">
+<div class="row mb-3">
+<div class="col-md-6">
+<p><strong>Employee ID:</strong> {{ employee.employee_id }}</p>
+</div>
+<div class="col-md-6">
+<p><strong>Department:</strong> {{ employee.dept_name or '-' }}</p>
+</div>
+</div>
+<div class="row mb-3">
+<div class="col-md-6">
+<p><strong>Date of Birth:</strong> {{ employee.dob.strftime('%Y-%m-%d') }}</p>
+</div>
+<div class="col-md-6">
+<p><strong>Join Date:</strong> {{ employee.join_date.strftime('%Y-%m-%d') }}</p>
+</div>
+</div>
+<div class="row mb-3">
+<div class="col-md-6">
+<p><strong>Work Email:</strong> {{ employee.work_email }}</p>
+</div>
+<div class="col-md-6">
+<p><strong>Personal Email:</strong> {{ employee.personal_email }}</p>
+</div>
+</div>
+<div class="row mb-3">
+<div class="col-md-6">
+<p><strong>Phone:</strong> {{ employee.phone }}</p>
+</div>
+<div class="col-md-6">
+<p><strong>Status:</strong> 
+                            {% if employee.status == 'active' %}
+<span class="badge bg-success">Active</span>
+                            {% else %}
+<span class="badge bg-danger">Inactive</span>
+                            {% endif %}
+</p>
+</div>
+</div>
+</div>
+</div>
+ 
+        <div class="card mt-4">
+<div class="card-header">
+<h5>Change Password</h5>
+</div>
+<div class="card-body">
+<form method="POST" action="{{ url_for('change_employee_password') }}">
+<div class="mb-3">
+<label for="current_password" class="form-label">Current Password</label>
+<input type="password" class="form-control" id="current_password" name="current_password" required>
+</div>
+<div class="mb-3">
+<label for="new_password" class="form-label">New Password</label>
+<input type="password" class="form-control" id="new_password" name="new_password" required>
+<small class="text-muted">Password must be at least 8 characters long</small>
+</div>
+<button type="submit" class="btn btn-primary">Change Password</button>
+</form>
+</div>
+</div>
+</div>
+</div>
+{% endblock %}

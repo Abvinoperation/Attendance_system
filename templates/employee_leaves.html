@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block title %}My Leaves{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">My Leave Applications</h2>
+        <div class="btn-group" role="group">
+            <a href="{{ url_for('employee_leaves', status='pending') }}" class="btn btn-outline-warning {% if status == 'pending' %}active{% endif %}">Pending</a>
+            <a href="{{ url_for('employee_leaves', status='approved') }}" class="btn btn-outline-success {% if status == 'approved' %}active{% endif %}">Approved</a>
+            <a href="{{ url_for('employee_leaves', status='rejected') }}" class="btn btn-outline-danger {% if status == 'rejected' %}active{% endif %}">Rejected</a>
+            <a href="{{ url_for('employee_leaves', status='all') }}" class="btn btn-outline-primary {% if status == 'all' %}active{% endif %}">All</a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Leave Applications -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Leave History</h5>
+                </div>
+                <div class="card-body">
+                    {% if leaves %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Leave Type</th>
+                                    <th>Dates</th>
+                                    <th class="text-end">Days</th>
+                                    <th>Reason</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for leave in leaves %}
+                                <tr>
+                                    <td>{{ leave.leave_name }}</td>
+                                    <td>{{ leave.start_date.strftime('%d %b') }} - {{ leave.end_date.strftime('%d %b') }}</td>
+                                    <td class="text-end">
+                                        {% if leave.leave_duration == 'full_day' %}
+                                            {{ (leave.end_date - leave.start_date).days + 1 }}
+                                        {% elif leave.leave_duration == 'first_half' or leave.leave_duration == 'second_half' %}
+                                            {{ "%.1f"|format((leave.end_date - leave.start_date).days + 0.5) }}
+                                        {% else %}
+                                            {{ (leave.end_date - leave.start_date).days + 1 }}
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span data-bs-toggle="tooltip" title="{{ leave.reason }}">
+                                            {{ leave.reason[:20] }}{% if leave.reason|length > 20 %}...{% endif %}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if leave.status == 'pending' %}
+                                        <span class="badge bg-warning">Pending</span>
+                                        {% elif leave.status == 'approved' %}
+                                        <span class="badge bg-success">Approved</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">Rejected</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if leave.status == 'pending' %}
+                                        <form method="POST" action="{{ url_for('cancel_leave', leave_id=leave.leave_id) }}" style="display: inline;">
+                                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to cancel this leave application?')">
+                                                <i class="bi bi-x-circle"></i> Cancel
+                                            </button>
+                                        </form>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-calendar-x text-muted" style="font-size: 2rem;"></i>
+                        <p class="mt-3">No leave applications found</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Leave Application Form and Balance -->
+        <div class="col-lg-4">
+            <!-- Apply for Leave -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Apply for Leave</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('apply_leave') }}">
+                        <div class="mb-3">
+                            <label for="leave_type_id" class="form-label">Leave Type</label>
+                            <select class="form-select" id="leave_type_id" name="leave_type_id" required>
+                                <option value="">Select Leave Type</option>
+                                {% for leave_type in leave_types %}
+                                <option value="{{ leave_type.leave_type_id }}">{{ leave_type.leave_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="row g-2 mb-3">
+                            <div class="col-md-6">
+                                <label for="start_date" class="form-label">Start Date</label>
+                                <input type="date" class="form-control" id="start_date" name="start_date" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="end_date" class="form-label">End Date</label>
+                                <input type="date" class="form-control" id="end_date" name="end_date" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="leave_duration" class="form-label">Leave Duration</label>
+                            <select class="form-control" id="leave_duration" name="leave_duration" required>
+                                <option value="full_day">Full Day</option>
+                                <option value="first_half">First Half </option>
+                                <option value="second_half">Second Half </option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="reason" class="form-label">Reason</label>
+                            <textarea class="form-control" id="reason" name="reason" rows="3" required></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-send"></i> Submit Application
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Leave Balance -->
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Leave Balance</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Leave Type</th>
+                                    <th class="text-end">Balance</th>
+                                    <th class="text-end">Max</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for balance in leave_balance %}
+                                <tr>
+                                    <td>{{ balance.leave_name }}</td>
+                                    <td class="text-end">{{ "%.1f"|format(balance.remaining_days) }}</td>
+                                    <td class="text-end">{{ "%.1f"|format(balance.max_days) }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+ 
+{% block title %}Manage Leave Applications{% endblock %}
+ 
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+<h2>Leave Applications</h2>
+<div>
+<a href="{{ url_for('manage_leaves', status='pending') }}" class="btn btn-outline-warning {% if status == 'pending' %}active{% endif %}">Pending</a>
+<a href="{{ url_for('manage_leaves', status='approved') }}" class="btn btn-outline-success {% if status == 'approved' %}active{% endif %}">Approved</a>
+<a href="{{ url_for('manage_leaves', status='rejected') }}" class="btn btn-outline-danger {% if status == 'rejected' %}active{% endif %}">Rejected</a>
+<a href="{{ url_for('manage_leaves', status='all') }}" class="btn btn-outline-primary {% if status == 'all' %}active{% endif %}">All</a>
+</div>
+</div>
+ 
+<div class="card">
+<div class="card-body">
+<div class="table-responsive">
+<table class="table table-hover">
+<thead>
+<tr>
+<th>Employee</th>
+<th>Leave Type</th>
+<th>Start Date</th>
+<th>End Date</th>
+<th>Days</th>
+<th>Reason</th>
+<th>Applied On</th>
+<th>Status</th>
+<th>Actions</th>
+</tr>
+</thead>
+<tbody>
+                    {% for leave in leaves %}
+<tr>
+<td>{{ leave.first_name }} {{ leave.last_name }}</td>
+<td>{{ leave.leave_name }}</td>
+<td>{{ leave.start_date.strftime('%Y-%m-%d') }}</td>
+<td>{{ leave.end_date.strftime('%Y-%m-%d') }}</td>
+<td>
+    {% if leave.leave_duration == 'full_day' %}
+        {{ (leave.end_date - leave.start_date).days + 1 }}
+    {% elif leave.leave_duration == 'first_half' or leave.leave_duration == 'second_half' %}
+        {{ "%.1f"|format((leave.end_date - leave.start_date).days + 0.5) }}
+    {% else %}
+        {{ (leave.end_date - leave.start_date).days + 1 }}
+    {% endif %}
+</td>
+<td>{{ leave.reason[:30] }}{% if leave.reason|length > 30 %}...{% endif %}</td>
+<td>{{ leave.applied_on.strftime('%Y-%m-%d') }}</td>
+<td>
+                            {% if leave.status == 'pending' %}
+<span class="badge bg-warning">Pending</span>
+                            {% elif leave.status == 'approved' %}
+<span class="badge bg-success">Approved</span>
+                            {% else %}
+<span class="badge bg-danger">Rejected</span>
+                            {% endif %}
+</td>
+<td>
+                            {% if leave.status == 'pending' %}
+<button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#actionLeaveModal{{ leave.leave_id }}">
+<i class="bi bi-check-circle"></i> Action
+</button>
+                            {% endif %}
+</td>
+</tr>
+ 
+                    <!-- Action Leave Modal -->
+<div class="modal fade" id="actionLeaveModal{{ leave.leave_id }}" tabindex="-1">
+<div class="modal-dialog">
+<div class="modal-content">
+<div class="modal-header">
+<h5 class="modal-title">Leave Action</h5>
+<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+<form method="POST" action="{{ url_for('leave_action', leave_id=leave.leave_id) }}">
+<div class="modal-body">
+<div class="mb-3">
+<label class="form-label">Employee</label>
+<p>{{ leave.first_name }} {{ leave.last_name }}</p>
+</div>
+<div class="mb-3">
+<label class="form-label">Leave Type</label>
+<p>{{ leave.leave_name }}</p>
+</div>
+<div class="mb-3">
+<label class="form-label">Period</label>
+<p>{{ leave.start_date.strftime('%Y-%m-%d') }} to {{ leave.end_date.strftime('%Y-%m-%d') }} ({{ "%.1f"|format((leave.end_date - leave.start_date).days + (0.5 if leave.leave_duration != 'full_day' else 1)) }} days)</p>
+</div>
+<div class="mb-3">
+<label class="form-label">Reason</label>
+<p>{{ leave.reason }}</p>
+</div>
+<div class="mb-3">
+<label for="action" class="form-label">Action</label>
+<select class="form-select" id="action" name="action" required>
+<option value="approved">Approve</option>
+<option value="rejected">Reject</option>
+</select>
+</div>
+<div class="mb-3">
+<label for="comments" class="form-label">Comments</label>
+<textarea class="form-control" id="comments" name="comments"></textarea>
+</div>
+</div>
+<div class="modal-footer">
+<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+<button type="submit" class="btn btn-primary">Submit</button>
+</div>
+</form>
+</div>
+</div>
+</div>
+                    {% endfor %}
+</tbody>
+</table>
+</div>
+</div>
+</div>
+{% endblock %}

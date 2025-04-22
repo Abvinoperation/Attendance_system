@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}Attendance System{% endblock %}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css"/>
+  <style>
+    body {
+      padding-top: 70px;
+      background-color: #f4f7fa;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .navbar-brand img {
+      height: 30px;
+      margin-right: 10px;
+    }
+
+    .sidebar {
+      height: 100vh;
+      position: fixed;
+      top: 56px;
+      left: 0;
+      width: 250px;
+      background-color: #ffffff;
+      border-right: 1px solid #dee2e6;
+      padding: 20px 0;
+    }
+
+    .main-content {
+      margin-left: 250px;
+      padding: 15px;
+    }
+
+    .footer {
+      background-color: #007bff;
+      color: white;
+      padding: 15px 0;
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .card {
+      border: none;
+      border-radius: 12px;
+    }
+
+    .attendance-present {
+      background-color: #d4edda;
+    }
+
+    .attendance-absent {
+      background-color: #f8d7da;
+    }
+
+    .attendance-halfday {
+      background-color: #fff3cd;
+    }
+
+    .attendance-leave {
+      background-color: #cce5ff;
+    }
+  </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
+  <div class="container-fluid">
+    <a class="navbar-brand d-flex align-items-center" href="#">
+      <img src="{{ url_for('static', filename='images/Abvin.jpg') }}" alt="Logo" height="30"/>
+      <strong>ABVIN VENTURES LLP</strong>
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto">
+        {% if session.role == 'admin' %}
+        <li class="nav-item">
+         <b><a class="nav-link" href="{{ url_for('admin_dashboard') }}" style="color: white;">Dashboard</a></b>
+        </li>
+        {% elif session.role == 'employee' %}
+        <li class="nav-item">
+          <b><a class="nav-link" href="{{ url_for('employee_dashboard') }}" style="color: white;">Dashboard</a></b>
+        </li>
+        <li class="nav-item">
+          <b><a class="nav-link" href="{{ url_for('employee_attendance') }}" style="color: white;">Attendance</a></b> 
+        </li>
+        {% endif %}
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+            <i class="bi bi-person-circle"></i> {{ session.username }}
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="{{ url_for('employee_profile') }}">Profile</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a></li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+{% if session.role == 'admin' %}
+<div class="sidebar d-none d-lg-block">
+  <ul class="nav flex-column">
+    <li class="nav-item"><a class="nav-link" href="{{ url_for('admin_dashboard') }}"><i class="bi bi-grid-fill"></i> Dashboard</a></li>
+    <li class="nav-item"><a class="nav-link" href="{{ url_for('manage_employees') }}"><i class="bi bi-people"></i> Employees</a></li>
+    <li class="nav-item"><a class="nav-link" href="{{ url_for('manage_departments') }}"><i class="bi bi-person-workspace"></i> Departments</a></li>
+    <li class="nav-item"><a class="nav-link" href="{{ url_for('manage_designations') }}"><i class="bi bi-person-badge"></i> Designations</a></li>
+    <li class="nav-item"><a class="nav-link" href="{{ url_for('manage_leave_types') }}"><i class="bi bi-calendar-event"></i> Leave Types</a></li>
+    <li class="nav-item"><a class="nav-link" href="{{ url_for('manage_leaves') }}"><i class="bi bi-calendar-check"></i> Leave Applications</a></li>
+    <li class="nav-item"><a class="nav-link" href="{{ url_for('manage_attendance') }}"><i class="bi bi-clock-history"></i> Attendance</a></li>
+    <li class="nav-item"><a class="nav-link" href="{{ url_for('attendance_report') }}"><i class="bi bi-file-earmark-bar-graph"></i>Attendnace Report</a></li>
+    <li class="nav-item"><a class="nav-link" href="{{ url_for('leave_report') }}"><i class="bi bi-file-earmark-excel"></i>Leave Report</a></li>
+  </ul>
+</div>
+{% endif %}
+
+<main class="{% if session.role == 'admin' %}main-content{% else %}container{% endif %}">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+  {% block content %}{% endblock %}
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Auto-dismiss alert after 2 seconds -->
+<script>
+  window.setTimeout(function() {
+    let alerts = document.querySelectorAll('.alert');
+    alerts.forEach(function(alert) {
+      let bsAlert = bootstrap.Alert.getOrCreateInstance(alert);
+      bsAlert.close();
+    });
+  }, 5000);
+</script>
+
+{% block footer %}{% endblock %}
+</body>
+</html>

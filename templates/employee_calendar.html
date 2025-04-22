@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+ 
+{% block title %}My Calendar{% endblock %}
+ 
+{% block content %}
+<div class="container-fluid py-4">
+<div class="d-flex justify-content-between align-items-center mb-4">
+<h2 class="mb-0">My Calendar - {{ month_name }} {{ year }}</h2>
+<div>
+<a href="{{ url_for('employee_calendar', year=prev_year, month=prev_month) }}" class="btn btn-outline-secondary me-2">
+<i class="bi bi-chevron-left"></i> Previous
+</a>
+<a href="{{ url_for('employee_calendar', year=next_year, month=next_month) }}" class="btn btn-outline-secondary">
+
+                Next <i class="bi bi-chevron-right"></i>
+</a>
+</div>
+</div>
+ 
+    <!-- Calendar Legend -->
+<div class="row mb-4">
+<div class="col-12">
+<div class="card shadow-sm">
+<div class="card-body py-2">
+<div class="d-flex flex-wrap align-items-center">
+<div class="me-3 d-flex align-items-center">
+<span class="badge bg-success me-2"><i class="bi bi-check-circle-fill"></i></span>
+<small>Full day (≥8 hours)</small>
+</div>
+<div class="me-3 d-flex align-items-center">
+<span class="badge bg-danger me-2"><i class="bi bi-exclamation-circle-fill"></i></span>
+<small>Short day (<8 hours)</small>
+</div>
+<div class="me-3 d-flex align-items-center">
+<span class="badge bg-primary me-2"><i class="bi bi-calendar-event"></i></span>
+<small>Leave day</small>
+</div>
+<div class="d-flex align-items-center">
+<span class="badge bg-secondary me-2"><i class="bi bi-dash-circle"></i></span>
+<small>No record</small>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+ 
+    <!-- Calendar -->
+<div class="card shadow-sm">
+<div class="card-body p-0">
+<table class="table table-bordered mb-0">
+<thead>
+<tr class="table-light">
+<th style="width: 14.28%">Monday</th>
+<th style="width: 14.28%">Tuesday</th>
+<th style="width: 14.28%">Wednesday</th>
+<th style="width: 14.28%">Thursday</th>
+<th style="width: 14.28%">Friday</th>
+<th style="width: 14.28%">Saturday</th>
+<th style="width: 14.28%">Sunday</th>
+</tr>
+</thead>
+<tbody>
+
+                    {% for week in weeks %}
+<tr>
+
+                        {% for day in week %}
+<td style="height: 120px; vertical-align: top; {% if day.month != 'current' %}background-color: #f8f9fa;{% endif %}">
+<div class="d-flex justify-content-between p-2">
+<span class="fw-bold">{{ day.day }}</span>
+
+                                {% if day.month == 'current' %}
+<span>
+
+                                        {% if day.attendance %}
+
+                                            {% if day.attendance.total_hours >= 8 %}
+<i class="bi bi-check-circle-fill text-success"></i>
+
+                                            {% else %}
+<i class="bi bi-exclamation-circle-fill text-danger"></i>
+
+                                            {% endif %}
+
+                                        {% elif day.leave %}
+<i class="bi bi-calendar-event text-primary"></i>
+
+                                        {% else %}
+<i class="bi bi-dash-circle text-secondary"></i>
+
+                                        {% endif %}
+</span>
+
+                                {% endif %}
+</div>
+
+                            {% if day.month == 'current' %}
+<div class="px-2">
+
+                                    {% if day.attendance %}
+<small class="d-block">In: {{ day.attendance.check_in.strftime('%H:%M') }}</small>
+<small class="d-block">Out: {{ day.attendance.check_out.strftime('%H:%M') if day.attendance.check_out else '-' }}</small>
+<small class="d-block">Hours: {{ day.attendance.total_hours or '-' }}</small>
+
+                                    {% elif day.leave %}
+<small class="d-block text-primary">{{ day.leave.leave_name }}</small>
+<small class="d-block text-primary">{{ day.leave.status|title }}</small>
+
+                                    {% endif %}
+</div>
+
+                            {% endif %}
+</td>
+
+                        {% endfor %}
+</tr>
+
+                    {% endfor %}
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+{% endblock %}
+ 

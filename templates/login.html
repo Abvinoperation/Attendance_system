@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center align-items-center" style="min-height: 60vh; background: linear-gradient(0, 0, 0);">
+  <div class="col-md-6 col-lg-4">
+<br>
+
+    <div class="card shadow-lg border border-primary rounded-4">
+      <div class="card-body text-center">
+        <img src="static/images/Abvin.jpg" alt="Logo" width="140" height="75" />
+
+
+         <p class="text-muted">SIGN IN</p>
+        
+        <form method="POST" action="{{ url_for('login') }}">
+          <div class="mb-3 text-start">
+            <label for="username" class="form-label">Username / Email</label>
+            <input type="text" class="form-control rounded-pill" id="username" name="username" required>
+          </div>
+          <div class="mb-3 text-start">
+            <label for="password" class="form-label">Password</label>
+            <input type="password" class="form-control rounded-pill" id="password" name="password" required>
+          </div>
+          <div class="mb-4 text-start">
+            <label for="role" class="form-label">Login As</label>
+            <select class="form-select rounded-pill" id="role" name="role" required>
+              <option value="employee">Employee</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+          <div class="d-grid">
+            <button type="submit" class="btn btn-primary rounded-pill btn-lg">Login</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block footer %}
+<footer class="text-center text-white mt-5" style="background-color: #0d6efd;">
+  <div class="container p-3">
+    <p class="mb-0">
+      &copy; {{ current_year }} Abvin Technologies. All Rights Reserved.
+    </p>
+  </div>
+</footer>
+{% endblock %}
+

@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Attendance{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Attendance for {{ date_filter }}</h2>
+    <form method="GET" class="row g-3">
+        <div class="col-auto">
+            <input type="date" class="form-control" name="date" value="{{ date_filter }}">
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary">Filter</button>
+        </div>
+    </form>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Employee</th>
+                        <th>Check In</th>
+                        <th>Check Out</th>
+                        <th>Total Hours</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in attendance %}
+                    <tr>
+                        <td>{{ record.first_name }} {{ record.last_name }} ({{ record.employee_id }})</td>
+                        <td>{{ record.check_in.strftime('%H:%M:%S') }}</td>
+                        <td>{{ record.check_out.strftime('%H:%M:%S') if record.check_out else '-' }}</td>
+                        <td>{{ record.total_hours or '-' }}</td>
+                        <td>
+                            <span class="badge bg-{% if record.status == 'present' %}success{% elif record.status == 'absent' %}danger{% elif record.status == 'half-day' %}warning{% else %}info{% endif %}">
+                                {{ record.status }}
+                            </span>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#editAttendanceModal{{ record.att_id }}">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <form method="POST" action="{{ url_for('delete_attendance', att_id=record.att_id) }}" style="display: inline;">
+                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this attendance record?')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+
+                    <!-- Edit Attendance Modal -->
+                    <div class="modal fade" id="editAttendanceModal{{ record.att_id }}" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Edit Attendance</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <form method="POST" action="{{ url_for('update_attendance', att_id=record.att_id) }}">
+                                    <div class="modal-body">
+                                        <div class="mb-3">
+                                            <label class="form-label">Employee</label>
+                                            <p>{{ record.first_name }} {{ record.last_name }}</p>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="check_in" class="form-label">Check In</label>
+                                            <input type="datetime-local" class="form-control" id="check_in" name="check_in" 
+                                                   value="{{ record.check_in.strftime('%Y-%m-%dT%H:%M') }}" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="check_out" class="form-label">Check Out</label>
+                                            <input type="datetime-local" class="form-control" id="check_out" name="check_out" 
+                                                   value="{{ record.check_out.strftime('%Y-%m-%dT%H:%M') if record.check_out else '' }}">
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header">
+        <h5>Absent Employees</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Employee</th>
+                        <th>Department</th>
+                        <th>Designation</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for employee in absent_employees %}
+                    <tr>
+                        <td>{{ employee.first_name }} {{ employee.last_name }} ({{ employee.employee_id }})</td>
+                        <td>{{ employee.dept_name or '-' }}</td>
+                        <td>{{ employee.desig_name or '-' }}</td>
+                        <td>
+                            <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addAttendanceModal{{ employee.emp_id }}">
+                                <i class="bi bi-plus-circle"></i> Add Attendance
+                            </button>
+                        </td>
+                    </tr>
+
+                    <!-- Add Attendance Modal -->
+                    <div class="modal fade" id="addAttendanceModal{{ employee.emp_id }}" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Add Attendance for {{ employee.first_name }} {{ employee.last_name }}</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <form method="POST" action="{{ url_for('manual_attendance_entry') }}">
+                                    <input type="hidden" name="emp_id" value="{{ employee.emp_id }}">
+                                    <input type="hidden" name="date" value="{{ date_filter }}">
+                                    <div class="modal-body">
+                                        <div class="mb-3">
+                                            <label for="check_in" class="form-label">Check In Time</label>
+                                            <input type="time" class="form-control" id="check_in" name="check_in" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="check_out" class="form-label">Check Out Time</label>
+                                            <input type="time" class="form-control" id="check_out" name="check_out">
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                        <button type="submit" class="btn btn-primary">Save</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

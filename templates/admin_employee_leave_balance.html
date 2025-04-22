@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+ 
+{% block title %}Employee Leave Balance{% endblock %}
+ 
+{% block content %}
+<div class="container mt-4">
+<h2>Leave Balance for {{ employee.first_name }} {{ employee.last_name }}</h2>
+<p class="text-muted">Employee ID: {{ employee.employee_id }} | Department: {{ employee.dept_name }} | Designation: {{ employee.desig_name }}</p>
+<a href="{{ url_for('manage_employees') }}" class="btn btn-secondary mb-3">Back to Employees</a>
+<div class="card">
+<div class="card-header">
+<h4>Current Leave Balances</h4>
+</div>
+<div class="card-body">
+<div class="table-responsive">
+<table class="table table-striped">
+<thead>
+<tr>
+<th>Leave Type</th>
+<th>Max Days</th>
+<th>Remaining Days</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+                        {% for balance in leave_balances %}
+<tr>
+<td>{{ balance.leave_name }}</td>
+<td>{{ balance.max_days }}</td>
+<td>
+<span class="{% if balance.remaining_days < 3 %}text-danger{% elif balance.remaining_days < 5 %}text-warning{% else %}text-success{% endif %}">
+                                    {{ balance.remaining_days }}
+</span>
+</td>
+<td>{{ balance.description }}</td>
+</tr>
+                        {% endfor %}
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div class="card mt-4">
+<div class="card-header">
+<h4>Adjust Leave Balance</h4>
+</div>
+<div class="card-body">
+<form method="POST" action="{{ url_for('adjust_leave_balance', emp_id=employee.emp_id) }}">
+<div class="form-row">
+<div class="form-group col-md-4">
+<label for="leave_type_id">Leave Type</label>
+<select class="form-control" id="leave_type_id" name="leave_type_id" required>
+<option value="">Select Leave Type</option>
+                            {% for balance in leave_balances %}
+<option value="{{ balance.leave_type_id }}">{{ balance.leave_name }}</option>
+                            {% endfor %}
+</select>
+</div>
+<div class="form-group col-md-4">
+<label for="adjustment_type">Adjustment Type</label>
+<select class="form-control" id="adjustment_type" name="adjustment_type" required>
+<option value="add">Add Days</option>
+<option value="subtract">Subtract Days</option>
+<option value="set">Set To Value</option>
+</select>
+</div>
+<div class="form-group col-md-4">
+<label for="days">Days</label>
+<input type="number" class="form-control" id="days" name="days" min="0" step="0.5" required>
+</div>
+</div>
+<div class="form-group">
+<label for="reason">Reason</label>
+<textarea class="form-control" id="reason" name="reason" rows="2" required></textarea>
+</div>
+<button type="submit" class="btn btn-primary">Update Balance</button>
+</form>
+</div>
+</div>
+</div>
+{% endblock %}
