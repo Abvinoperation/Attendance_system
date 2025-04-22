@@ -3,3 +3,4 @@ Flask-MySQLdb==2.0.0
 bcrypt==4.0.1
 python-dotenv==1.0.0
 Werkzeug==2.3.6
+gunicorn==23.0.0
